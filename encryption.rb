@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-
+require 'json'
 require 'tty-spinner'
 require 'prime'
 
@@ -107,8 +107,13 @@ end
 
 
 if ARGV[0] == "-c" or ARGV[0] == "--create-key-pair"
+  # Get a name for the key pair
+  puts "Please enter a email for the key pair:"
+  name = STDIN.gets.chomp
   # Generate 2 Random Numbers
+  # p and q
   spinner.auto_spin
+  # Array to store p and q
   randNums = []
   (0..1).each do |i|
     # Generate Random Num
@@ -124,29 +129,76 @@ if ARGV[0] == "-c" or ARGV[0] == "--create-key-pair"
     end
     randNums[i] = value
   end
+  # n = p * q
   n = randNums[0] * randNums[1]
+  # coprime = (p - 1) * (q - 1)
   coprime = (randNums[0] - 1) * (randNums[1] - 1)
+  # Generate e randomly
   e = randomBitNum 1024
+  # Keep incrementing until e is co prime with (p - 1) * (q - 1)
+  # and e is prime
   until (coprime.gcd(e) == 1) and (isPrime? e )do
     e += 1
   end
+  # D is the mult. inv. of e and (p - 1) * (q - 1)s
   d =  invmod(e,coprime)
   spinner.stop("Done!")
-  if not File.directory?('~/.thuilot-drew-encrypt')
-    Dir.mkdir '~/.thuilot-drew-encrypt'
+
+  # Create a folder if not there
+  if not File.directory?(File.expand_path('~')+'/.bse')
+    Dir.mkdir File.expand_path('~')+'/.bse'
   end
-  puts "Please enter a name for the key"
-  name = gets.chomp
-  File.open("~/.thuilot-drew-encrypt/#{name}.pub", 'w') do |file|
-    file.write(e.to_s + "|\n|" + n.to_s)
+
+  # Write to pub and sec keys
+  File.open(File.expand_path('~')+"/.bse/#{name[0..name.index("@")]}.pub", 'w') do |file|
+    file.write(name + "\n" + e.to_s + "\n" + n.to_s)
   end
-  File.open("~/.thuilot-drew-encrypt/#{name}.sec", 'w') do |file|
-    file.write(d.to_s + "|\n|" + n.to_s)
+  File.open(File.expand_path('~')+"/.bse/#{name[0..name.index("@")]}.sec", 'w') do |file|
+    file.write(name + "\n" + d.to_s + "\n" + n.to_s)
+  end
+
+  if File.file?(File.expand_path('~')+"/.bse/keys.json")
+    keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
+    key_hash = JSON.parse(keysFile)
+  else
+    key_hash = {}
+  end
+  key_hash[name] = { location: "#{name[0..name.index("@")]}.pub", secret: "#{name[0..name.index("@")]}.sec" }
+  # Add to key register
+  File.open(File.expand_path('~')+"/.bse/keys.json", 'w') do |file|
+    file.write(key_hash.to_json)
   end
 
 elsif ARGV[0] == "-e" or ARGV[0] == "--encrypt"
+  # Get name to encrypt
+  found = false
+  until found
+    # Get the email to encrypt to
+    puts "Please enter an email to encrypt to"
+    email = STDIN.gets.chomp
+    # Get list of emails
+    if File.file?(File.expand_path('~')+"/.bse/keys.json")
+      keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
+      key_hash = JSON.parse(keysFile)
+    else
+      # No keys in hash
+      puts "No keys found call with -a to add keys"
+      exit
+    end
+    # Check hash for email
+    if key_hash.key?(email)
+      # TODO
+      # Encrypt to person
+    else
+      puts "Sorry, email not found"
+    end
+  end
 
 elsif ARGV[0] == "-d" or ARGV[0] == "--decrypt"
+
+elsif ARGV[0] == "-a" or ARGV[0] == "--add-key"
+
+elsif ARGV[0] == "-s" or ARGV[0] == "--add-secret-key"
 
 else
 

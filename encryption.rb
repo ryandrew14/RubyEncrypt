@@ -86,6 +86,7 @@ def extended_gcd(a, b)
   return last_remainder, last_x * (a < 0 ? -1 : 1)
 end
 
+# Get multi. Inv. based on eculidian algorithim
 def invmod(e, et)
   g, x = extended_gcd(e, et)
   if g != 1
@@ -103,8 +104,9 @@ def randomBitNum x
   return bitString.to_i(2)
 end
 
-# Compute based on arguments
 
+
+#### Compute based on arguments
 
 if ARGV[0] == "-c" or ARGV[0] == "--create-key-pair"
   # Get a name for the key pair
@@ -150,32 +152,45 @@ if ARGV[0] == "-c" or ARGV[0] == "--create-key-pair"
   end
 
   # Write to pub and sec keys
-  File.open(File.expand_path('~')+"/.bse/#{name[0..name.index("@")]}.pub", 'w') do |file|
+  File.open(File.expand_path('~')+"/.bse/#{name[0...name.index("@")]}.pub", 'w') do |file|
     file.write(name + "\n" + e.to_s + "\n" + n.to_s)
   end
-  File.open(File.expand_path('~')+"/.bse/#{name[0..name.index("@")]}.sec", 'w') do |file|
+  File.open(File.expand_path('~')+"/.bse/#{name[0...name.index("@")]}.sec", 'w') do |file|
     file.write(name + "\n" + d.to_s + "\n" + n.to_s)
   end
 
+  ## Add key to resgister
+
+  # Check if register exists
   if File.file?(File.expand_path('~')+"/.bse/keys.json")
     keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
     key_hash = JSON.parse(keysFile)
   else
     key_hash = {}
   end
-  key_hash[name] = { location: "#{name[0..name.index("@")]}.pub", secret: "#{name[0..name.index("@")]}.sec" }
-  # Add to key register
+
+  # add key's hash value to register
+  key_hash[name] = { location: "#{name[0...name.index("@")]}.pub", secret: "#{name[0...name.index("@")]}.sec" }
+
+  # Write to the register
   File.open(File.expand_path('~')+"/.bse/keys.json", 'w') do |file|
     file.write(key_hash.to_json)
   end
 
 elsif ARGV[0] == "-e" or ARGV[0] == "--encrypt"
-  # Get name to encrypt
+  ### Get name to encrypt
+
   found = false
   until found
+
     # Get the email to encrypt to
-    puts "Please enter an email to encrypt to"
+    puts "Please enter an email to encrypt to (type exit to quit)"
+
+    # Exit loop if you have the wrong email
     email = STDIN.gets.chomp
+    if email = "exit"
+      exit
+    end
     # Get list of emails
     if File.file?(File.expand_path('~')+"/.bse/keys.json")
       keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
@@ -197,6 +212,31 @@ elsif ARGV[0] == "-e" or ARGV[0] == "--encrypt"
 elsif ARGV[0] == "-d" or ARGV[0] == "--decrypt"
 
 elsif ARGV[0] == "-a" or ARGV[0] == "--add-key"
+  # Get the location of a public key
+  puts "please give location of public key to add:"
+  loc = STDIN.gets.chomp
+
+  # Get email from the given key
+  email = File.read(loc)[0..index("\n")]
+
+  # Copy to the folder with username as file name
+  system("cp #{loc} "+File.expand_path('~')+"/.bse/#{email[0...index("@")]}.pub")
+
+  # Open up keys.json to add key to register
+  if File.file?(File.expand_path('~')+"/.bse/keys.json")
+    keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
+    key_hash = JSON.parse(keysFile)
+  else
+    key_hash = {}
+  end
+
+  # Assign it a hash value
+  key_hash[email] = { location: "#{name[0...name.index("@")]}.pub" }
+
+  # Write to register
+  File.open(File.expand_path('~')+"/.bse/keys.json", 'w') do |file|
+    file.write(key_hash.to_json)
+  end
 
 elsif ARGV[0] == "-s" or ARGV[0] == "--add-secret-key"
 

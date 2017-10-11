@@ -1,6 +1,13 @@
 #!/usr/bin/env ruby
 
+
+require 'tty-spinner'
 require 'prime'
+
+# Loading Icon
+spinner = TTY::Spinner.new("[:spinner] Generating Key...",format: :arrow_pulse,hide_cursor: true)
+
+
 # RSA
 # Step 1: Pick p and q (both prime)
 # Step 2: n = p * q = modulus
@@ -56,16 +63,8 @@ end
 
 # Actaully Testing primality
 def isPrime? n
-<<<<<<< HEAD
   Prime.each(10000) do |num|
     if ( raiseToModulus num, n-1, n ) != 1 or n % num == 0
-=======
-  listOfPrimes = [ 2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,
-    79,83,89,97,101,103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163,
-    167, 173, 179, 181, 191, 193, 197, 199,]
-  listOfPrimes.each do |num|
-    if ( raiseToModulus num, n-1, n ) != 1
->>>>>>> 7b3d2b4407747216a42f488918d7533d9717367e
       return false
     end
   end
@@ -109,6 +108,7 @@ end
 
 if ARGV[0] == "-c" or ARGV[0] == "--create-key-pair"
   # Generate 2 Random Numbers
+  spinner.auto_spin
   randNums = []
   (0..1).each do |i|
     # Generate Random Num
@@ -131,6 +131,7 @@ if ARGV[0] == "-c" or ARGV[0] == "--create-key-pair"
     e += 1
   end
   d =  invmod(e,coprime)
+  spinner.stop("Done!")
   if not File.directory?('~/.thuilot-drew-encrypt')
     Dir.mkdir '~/.thuilot-drew-encrypt'
   end

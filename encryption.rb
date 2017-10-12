@@ -104,6 +104,53 @@ def randomBitNum x
   return bitString.to_i(2)
 end
 
+# Method to encrypt
+def encrypt filePath, keyLocation
+  dataToEncrypt = File.read(filePath)
+  charArray = dataToEncrypt.split("")
+  encryptedText = ""
+  charArray.each do |char|
+    if char.ord.to_s(8).length == 2
+      encryptedText += "0" + char.ord.to_s(8)
+    else
+      encryptedText += char.ord.to_s(8)
+    end
+  end
+  eAndN = File.read(keyLocation)
+  e = eAndN[(eAndN.index("\n") + 1)..-1]
+  e = e[0...e.index("\n")]
+  n = eAndN[(eAndN.index("\n") + 1)..-1]
+  n = n[(n.index("\n") + 1)..-1]
+  encryptedText = raiseToModulus encryptedText.to_i(8), e.to_i, n.to_i
+  return encryptedText
+end
+
+# Method to decrypt
+def decrypt filePath, keyLocation
+  # get numbers for encryption
+  dAndN = File.read(keyLocation)
+  d = dAndN[(dAndN.index("\n") + 1)..-1]
+  d = d[0...d.index("\n")]
+  n = dAndN[(dAndN.index("\n") + 1)..-1]
+  n = n[(n.index("\n") + 1)..-1]
+
+  # Get encryptedText
+  encryptedText = File.read(filePath)
+  encryptedText = encryptedText[(encryptedText.index("\n")+1)..-1]
+
+  # Convert Back
+  decryptedText = raiseToModulus encryptedText.to_i, d.to_i, n.to_i
+
+  # Cut string up into thirds
+  decryptedText = decryptedText.to_s(8)
+  decryptedText = decryptedText.scan(/.{1,3}/)
+  # Loop through to turn each back into letter
+  text = ""
+  decryptedText.each do |letter|
+    text += letter.to_i(8).chr
+  end
+  return text
+end
 
 
 #### Compute based on arguments
@@ -202,14 +249,44 @@ elsif ARGV[0] == "-e" or ARGV[0] == "--encrypt"
     end
     # Check hash for email
     if key_hash.key?(email)
-      # TODO
-      # Encrypt to person
+      found = true
+      if ARGV.length > 1
+        File.open(ARGV[1]+".encrypted", 'w') do |file|
+          file.write(email + "\n" + encrypt(ARGV[1], File.expand_path('~') + "/.bre/" + key_hash[email]["location"]).to_s)
+        end
+      else
+        puts "please enter a file as the second argument"
+      end
     else
       puts "Sorry, email not found"
     end
   end
 
 elsif ARGV[0] == "-d" or ARGV[0] == "--decrypt"
+  if ARGV.length > 1
+    # Get email
+    email = File.read(ARGV[1])
+    email = email[0...email.index("\n")]
+
+    # Load in key hash
+    keysFile = File.read(File.expand_path('~')+"/.bre/keys.json")
+    key_hash = JSON.parse(keysFile)
+
+    # check key hash
+    if key_hash.key?(email)
+      if key_hash[email].key?("secret")
+        File.open(ARGV[1]+".txt", 'w') do |file|
+          file.write(decrypt(ARGV[1], File.expand_path('~')+"/.bre/" + key_hash[email]["secret"]))
+        end
+      else
+        puts "Please add secret key for #{email}"
+      end
+    else
+      puts "Key for #{email} not found"
+    end
+  else
+      puts "please enter a file as the second argument"
+  end
 
 elsif ARGV[0] == "-a" or ARGV[0] == "--add-key"
   # Get the location of a public key
@@ -268,5 +345,6 @@ elsif ARGV[0] == "-s" or ARGV[0] == "--add-secret-key"
   end
 
 else
-
+  puts "Usage:"
+  puts "-c to create a key pair\n-a \{key-location\} to add key\n-e \{file-location\} to en encrypt contents of file\n-d \{file-location\} to en decrypt contents of file\n-s \{key-location\}to add secret key"
 end

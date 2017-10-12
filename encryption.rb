@@ -147,23 +147,23 @@ if ARGV[0] == "-c" or ARGV[0] == "--create-key-pair"
   spinner.stop("Done!")
 
   # Create a folder if not there
-  if not File.directory?(File.expand_path('~')+'/.bse')
-    Dir.mkdir File.expand_path('~')+'/.bse'
+  if not File.directory?(File.expand_path('~')+'/.bre')
+    Dir.mkdir File.expand_path('~')+'/.bre'
   end
 
   # Write to pub and sec keys
-  File.open(File.expand_path('~')+"/.bse/#{name[0...name.index("@")]}.pub", 'w') do |file|
+  File.open(File.expand_path('~')+"/.bre/#{name[0...name.index("@")]}.pub", 'w') do |file|
     file.write(name + "\n" + e.to_s + "\n" + n.to_s)
   end
-  File.open(File.expand_path('~')+"/.bse/#{name[0...name.index("@")]}.sec", 'w') do |file|
+  File.open(File.expand_path('~')+"/.bre/#{name[0...name.index("@")]}.sec", 'w') do |file|
     file.write(name + "\n" + d.to_s + "\n" + n.to_s)
   end
 
   ## Add key to resgister
 
   # Check if register exists
-  if File.file?(File.expand_path('~')+"/.bse/keys.json")
-    keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
+  if File.file?(File.expand_path('~')+"/.bre/keys.json")
+    keysFile = File.read(File.expand_path('~')+"/.bre/keys.json")
     key_hash = JSON.parse(keysFile)
   else
     key_hash = {}
@@ -173,7 +173,7 @@ if ARGV[0] == "-c" or ARGV[0] == "--create-key-pair"
   key_hash[name] = { location: "#{name[0...name.index("@")]}.pub", secret: "#{name[0...name.index("@")]}.sec" }
 
   # Write to the register
-  File.open(File.expand_path('~')+"/.bse/keys.json", 'w') do |file|
+  File.open(File.expand_path('~')+"/.bre/keys.json", 'w') do |file|
     file.write(key_hash.to_json)
   end
 
@@ -188,12 +188,12 @@ elsif ARGV[0] == "-e" or ARGV[0] == "--encrypt"
 
     # Exit loop if you have the wrong email
     email = STDIN.gets.chomp
-    if email = "exit"
+    if email == "exit"
       exit
     end
     # Get list of emails
-    if File.file?(File.expand_path('~')+"/.bse/keys.json")
-      keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
+    if File.file?(File.expand_path('~')+"/.bre/keys.json")
+      keysFile = File.read(File.expand_path('~')+"/.bre/keys.json")
       key_hash = JSON.parse(keysFile)
     else
       # No keys in hash
@@ -220,11 +220,11 @@ elsif ARGV[0] == "-a" or ARGV[0] == "--add-key"
   email = File.read(loc)[0..index("\n")]
 
   # Copy to the folder with username as file name
-  system("cp #{loc} "+File.expand_path('~')+"/.bse/#{email[0...index("@")]}.pub")
+  system("cp #{loc} "+File.expand_path('~')+"/.bre/#{email[0...index("@")]}.pub")
 
   # Open up keys.json to add key to register
-  if File.file?(File.expand_path('~')+"/.bse/keys.json")
-    keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
+  if File.file?(File.expand_path('~')+"/.bre/keys.json")
+    keysFile = File.read(File.expand_path('~')+"/.bre/keys.json")
     key_hash = JSON.parse(keysFile)
   else
     key_hash = {}
@@ -234,7 +234,7 @@ elsif ARGV[0] == "-a" or ARGV[0] == "--add-key"
   key_hash[email] = { location: "#{name[0...name.index("@")]}.pub" }
 
   # Write to register
-  File.open(File.expand_path('~')+"/.bse/keys.json", 'w') do |file|
+  File.open(File.expand_path('~')+"/.bre/keys.json", 'w') do |file|
     file.write(key_hash.to_json)
   end
 
@@ -249,11 +249,11 @@ elsif ARGV[0] == "-s" or ARGV[0] == "--add-secret-key"
   loc = STDIN.gets.chomp
 
   # Copy to the folder with username as file name
-  system("cp #{loc} "+File.expand_path('~')+"/.bse/#{email[0...index("@")]}.sec")
+  system("cp #{loc} "+File.expand_path('~')+"/.bre/#{email[0...index("@")]}.sec")
 
   # Check to see if keys file is there
-  if File.file?(File.expand_path('~')+"/.bse/keys.json")
-    keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
+  if File.file?(File.expand_path('~')+"/.bre/keys.json")
+    keysFile = File.read(File.expand_path('~')+"/.bre/keys.json")
     key_hash = JSON.parse(keysFile)
   else
     key_hash = {}
@@ -263,7 +263,7 @@ elsif ARGV[0] == "-s" or ARGV[0] == "--add-secret-key"
   key_hash[email][:secret] = "#{email[0...index("@")]}.sec"
 
   # Write to register
-  File.open(File.expand_path('~')+"/.bse/keys.json", 'w') do |file|
+  File.open(File.expand_path('~')+"/.bre/keys.json", 'w') do |file|
     file.write(key_hash.to_json)
   end
 

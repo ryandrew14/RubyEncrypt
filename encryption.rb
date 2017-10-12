@@ -240,6 +240,33 @@ elsif ARGV[0] == "-a" or ARGV[0] == "--add-key"
 
 elsif ARGV[0] == "-s" or ARGV[0] == "--add-secret-key"
 
+  # Get the email of the public key to associate the secret key with
+  puts "Enter email of public key to add secret key:"
+  email = STDIN.gets.chomp
+
+  # Get the location of the secret key
+  puts "Enter the location of the secret key:"
+  loc = STDIN.gets.chomp
+
+  # Copy to the folder with username as file name
+  system("cp #{loc} "+File.expand_path('~')+"/.bse/#{email[0...index("@")]}.sec")
+
+  # Check to see if keys file is there
+  if File.file?(File.expand_path('~')+"/.bse/keys.json")
+    keysFile = File.read(File.expand_path('~')+"/.bse/keys.json")
+    key_hash = JSON.parse(keysFile)
+  else
+    key_hash = {}
+  end
+
+  # Assign it a hash value
+  key_hash[email][:secret] = "#{email[0...index("@")]}.sec"
+
+  # Write to register
+  File.open(File.expand_path('~')+"/.bse/keys.json", 'w') do |file|
+    file.write(key_hash.to_json)
+  end
+
 else
 
 end

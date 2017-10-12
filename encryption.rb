@@ -346,5 +346,5 @@ elsif ARGV[0] == "-s" or ARGV[0] == "--add-secret-key"
 
 else
   puts "Usage:"
-  puts "-c to create a key pair\n-a \{key-location\} to add key\n-e \{file-location\} to en encrypt contents of file\n-d \{file-location\} to en decrypt contents of file\n-s \{key-location\}to add secret key"
+  puts "-c to create a key pair\n-a \<key-location\> to add key\n-e \<file-location\> to encrypt the contents of file\n-d \<file-location\> to decrypt the contents of file\n-s \<key-location\>to add secret key"
 end

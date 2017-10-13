@@ -108,12 +108,12 @@ end
 def encrypt filePath, keyLocation
   dataToEncrypt = File.read(filePath)
   charArray = dataToEncrypt.split("")
-  encryptedText = ""
+  toEncrypt = ""
   charArray.each do |char|
     if char.ord.to_s(8).length == 2
-      encryptedText += "0" + char.ord.to_s(8)
+      toEncrypt += "0" + char.ord.to_s(8)
     else
-      encryptedText += char.ord.to_s(8)
+      toEncrypt += char.ord.to_s(8)
     end
   end
   eAndN = File.read(keyLocation)
@@ -121,8 +121,17 @@ def encrypt filePath, keyLocation
   e = e[0...e.index("\n")]
   n = eAndN[(eAndN.index("\n") + 1)..-1]
   n = n[(n.index("\n") + 1)..-1]
-  encryptedText = raiseToModulus encryptedText.to_i(8), e.to_i, n.to_i
-  return encryptedText
+  toEncrypt = toEncrypt.scan(/.{1,300}/)
+  encrypted = ""
+  toEncrypt.each do |encrypt|
+    pre = ""
+    while encrypt[0] == "0" do
+      pre += "0|"
+      encrypt = encrypt[1..-1]
+    end
+    encrypted += pre + raiseToModulus(encrypt.to_i, e.to_i, n.to_i).to_s + "|"
+  end
+  return encrypted
 end
 
 # Method to decrypt
@@ -137,12 +146,15 @@ def decrypt filePath, keyLocation
   # Get encryptedText
   encryptedText = File.read(filePath)
   encryptedText = encryptedText[(encryptedText.index("\n")+1)..-1]
-
+  encryptedText = encryptedText.split("|")
   # Convert Back
-  decryptedText = raiseToModulus encryptedText.to_i, d.to_i, n.to_i
-
+  decryptedText = ""
+  encryptedText.each do |encrypt|
+    decryptedText += raiseToModulus(encrypt.to_i, d.to_i, n.to_i).to_s
+  end
+  #decryptedText= decryptedText.to_i
   # Cut string up into thirds
-  decryptedText = decryptedText.to_s(8)
+  #decryptedText = decryptedText.to_s(8)
   decryptedText = decryptedText.scan(/.{1,3}/)
   # Loop through to turn each back into letter
   text = ""
@@ -251,7 +263,12 @@ elsif ARGV[0] == "-e" or ARGV[0] == "--encrypt"
     if key_hash.key?(email)
       found = true
       if ARGV.length > 1
-        File.open(ARGV[1]+".encrypted", 'w') do |file|
+        if (ARGV.size > 2)
+          fileToWrite = Dir.pwd+"/" + ARGV[3]
+        else
+          fileToWrite = ARGV[1]+".encrypted"
+        end
+        File.open(fileToWrite, 'w') do |file|
           file.write(email + "\n" + encrypt(ARGV[1], File.expand_path('~') + "/.bre/" + key_hash[email]["location"]).to_s)
         end
       else
@@ -275,7 +292,12 @@ elsif ARGV[0] == "-d" or ARGV[0] == "--decrypt"
     # check key hash
     if key_hash.key?(email)
       if key_hash[email].key?("secret")
-        File.open(ARGV[1]+".txt", 'w') do |file|
+        if (ARGV.size > 3)
+          fileToWrite = Dir.pwd + "/" + ARGV[3]
+        else
+          fileToWrite = ARGV[1]+".txt"
+        end
+        File.open(fileToWrite, 'w') do |file|
           file.write(decrypt(ARGV[1], File.expand_path('~')+"/.bre/" + key_hash[email]["secret"]))
         end
       else
@@ -346,5 +368,5 @@ elsif ARGV[0] == "-s" or ARGV[0] == "--add-secret-key"
 
 else
   puts "Usage:"
-  puts "-c to create a key pair\n-a \<key-location\> to add key\n-e \<file-location\> to encrypt the contents of file\n-d \<file-location\> to decrypt the contents of file\n-s \<key-location\>to add secret key"
+  puts "-c to create a key pair\n-e \<file-location\> to encrypt the contents of file\n\t -o <file-output> to specify the output\n-d \<file-location\> to decrypt the contents of file\n\t -o <file-output> to specify the output\n-a \<key-location\> to add key\n-s \<key-location\>to add secret key"
 end

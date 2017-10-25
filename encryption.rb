@@ -19,7 +19,7 @@ spinner = TTY::Spinner.new("[:spinner] Generating Key...",format: :arrow_pulse,h
 # Step 5: Choose d such that d * e mod (phi(n)) = 1 (d is secret, e is public)
 
 # public info: (e, n)
-# private info: (d, p, q)
+# private info: (d, n)
 
 # to encrypt: raise your number x ^ e, mod n;
 # to decrypt: raise the encrypted message m ^ d, mod n

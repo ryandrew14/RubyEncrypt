@@ -8,6 +8,10 @@ Made by [Bryce Thuilot](https://www.github.com/bthuilot) and [Ryan Drew](https:/
 ## RubyEncrypt-visual
 This update provides a GUI for RubyEncrypt, built using [visual ruby](http://visualruby.net/) and [glade](https://glade.gnome.org/).
 
+### To Install:
+```
+gem install rbencrypt2
+```
 #### After typing the correct email into the text box, a user can:
 - Create keys using the Create button.
   - a public and private keypair will be created and stored in ~/.bre, and registered to ~/.bre/keys.json.

@@ -6,11 +6,15 @@ An Encryption algorithm made in ruby after learning about RSA encryption standar
 Made by [Bryce Thuilot](https://www.github.com/bthuilot) and [Ryan Drew](https://www.github.com/ryandrew14)
 
 ## RubyEncrypt-visual
-This update provides a GUI for RubyEncrypt, built using [visual ruby](http://visualruby.net/) and [glade](https://glade.gnome.org/).
+This update provides a ruby gem to [RubyGems.org](http://rubygems.org) featuring a GUI for RubyEncrypt, built using [visual ruby](http://visualruby.net/) and [glade](https://glade.gnome.org/).
 
 ### To Install:
 ```
 gem install rbencrypt2
+```
+### To Run:
+```
+rubyencrypt
 ```
 #### After typing the correct email into the text box, a user can:
 - Create keys using the Create button.
